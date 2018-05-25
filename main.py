@@ -27,14 +27,21 @@ def calc_units(estimate_seconds):
     return value, unit
 
 
-def print_estimate(estimate_seconds, average_estimate_seconds, average_n):
+def print_estimate(
+        estimate_seconds,
+        average_estimate_seconds,
+        estimate_block_speed,
+        avg_block_speed,
+        average_n
+):
     value1, unit1 = calc_units(estimate_seconds)
     value2, unit2 = calc_units(average_estimate_seconds)
 
     print(
-        '==Sync Estimation== recent: {} {} / average '
-        '(last {}): {} {}'.format(
-            value1, unit1, average_n, value2, unit2
+        '==Sync Estimation== latest: {} {} with {} blocks/sec || average '
+        '(last {}): {} {} with {} blocks/sec'.format(
+            value1, unit1, estimate_block_speed,
+            average_n, value2, unit2, avg_block_speed,
         )
     )
 
@@ -43,6 +50,7 @@ class Ethchain(object):
     def __init__(self, ethrpc_port, averages_limit, attempt_connect=True):
         self.last_block = 0
         self.latest_estimates = deque([], averages_limit)
+        self.latest_speed_estimates = deque([], averages_limit)
         self.web3 = None
         self.rpc_port = ethrpc_port
         self.connected = False
@@ -70,17 +78,22 @@ class Ethchain(object):
         if self.last_block != 0:
             processed_blocks = current - self.last_block
             top = result['highestBlock']
-            estimate_seconds = (seconds_passed * (top - current)) / processed_blocks
+            top_diff = top - current
+            estimate_seconds = (seconds_passed * top_diff) / processed_blocks
+            estimate_block_speed = processed_blocks / seconds_passed
             self.latest_estimates.appendleft(estimate_seconds)
+            self.latest_speed_estimates.appendleft(estimate_block_speed)
 
             average_length = len(self.latest_estimates)
             print_estimate(
                 estimate_seconds,
                 sum(self.latest_estimates) / average_length,
+                estimate_block_speed,
+                sum(self.latest_speed_estimates) / average_length,
                 average_length
             )
         else:
-            print('Did first estimation')
+            print('Doing lots of super complicated Math (for realsies!), have patience.')
 
         self.last_block = current
 
