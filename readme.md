@@ -2,6 +2,8 @@
 
 This is a super simple script to get a time estimation for syncing an ethereum chain.
 
+![Sync Estimator Screenshot](https://raw.githubusercontent.com/LefterisJP/syncestimator/master/images/screenshot.png)
+
 ## Installation
 
 - Make a [python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
